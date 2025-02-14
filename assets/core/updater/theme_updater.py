@@ -97,7 +97,8 @@ class ThemeUpdater:
             if platform.system() == "Windows":
                 remote_name = 'origin'
                 remote = repo.remotes[remote_name]
-                remote.fetch()
+                # Enable automatic proxy detection
+                remote.fetch(proxy = True)
                 latest_commit = repo.revparse_single('origin/HEAD').id
                 repo.reset(latest_commit, pygit2.GIT_RESET_HARD)
             else:
