@@ -9,4 +9,5 @@ GitPython | Linux
 cssutils
 websockets
 watchdog
+PySocks
 pyperclip
