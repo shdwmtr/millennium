@@ -105,14 +105,14 @@ Supported Platforms:
 │  │  ├─ millennium/
 │  │  │  ├─ libMillennium.so # millennium
 │  │  │  ├─ libpython-3.11.8.so # dynamically linked to millennium, allows user plugin backends to run
+│  ├─ share/
+│  │  ├─ assets/ # builtin plugin that provides base functionality for millennium.
+│  │  ├─ shims/
 ├─ home/
 │  ├─ $user/
 │  │  ├─ .local/share
 │  │  │  ├─ millennium/
-│  │  │  │  ├─ lib/
-│  │  │  │  │  ├─ assets/ # builtin plugin that provides base functionality for millennium.
-│  │  │  │  │  ├─ cache/ # a cached, minimal, production build of python's runtime deps, used to run and manage plugins
-│  │  │  │  │  ├─ shims/
+│  │  │  │  ├─ .venv/
 │  │  │  │  ├─ logs/
 │  │  │  │  ├─ plugins/ # user plugins
 │  │  ├─ .config/

@@ -1,45 +1,11 @@
 #!/bin/bash
 
-: "${XDG_DATA_HOME:=$HOME/.local/share}"
-MILLENNIUM_DIR="$XDG_DATA_HOME/millennium"
-
-# Get the actual user, whether running with sudo or not
-CURRENT_USER=$(logname 2>/dev/null || echo "$SUDO_USER" || echo "$USER")
-
-# Function to set proper permissions
-set_permissions() {
-    local target="$1"
-    echo -e "\e[1m\e[92m==>\e[0m \e[1mSetting permissions for $CURRENT_USER...\e[0m"
-    sudo chown -R $CURRENT_USER:$CURRENT_USER "$target"
-    sudo chmod -R u+rwX,go+rX,go-w "$target"
-}
-
 post_install() {
-    # Create directory if it doesn't exist
-    sudo mkdir -p "$MILLENNIUM_DIR/lib/cache/"
-    
-    # Set initial permissions
-    set_permissions "$MILLENNIUM_DIR"
-
-    echo -e "\e[1m\e[92m==>\e[0m \e[1mCreating virtual environment...\e[0m"
-    /opt/python-i686-3.11.8/bin/python3.11 -m venv "$MILLENNIUM_DIR/lib/cache/" --system-site-packages --symlinks
-    
-    # Reset permissions after virtual environment creation
-    set_permissions "$MILLENNIUM_DIR"
-
     echo -e "\e[1m\e[92m==>\e[0m \e[1mPlease run 'millennium patch' setup Millennium.\e[0m"
     echo -e "\e[1m\e[92m==>\e[0m \e[1mSee https://docs.steambrew.app/users/installing for help.\e[0m"
 }
 
-post_remove() {
-    # Set permissions before removal to ensure user can delete files
-    set_permissions "$MILLENNIUM_DIR"
-    sudo rm -rf "$MILLENNIUM_DIR/lib/cache/"
-}
-
 post_upgrade() {
-    set_permissions "$MILLENNIUM_DIR"
-
     echo -e "\e[1m\e[92m==>\e[0m \e[1mPlease run 'millennium patch' to update the Millennium's start script.\e[0m"
     echo -e "\e[1m\e[92m==>\e[0m \e[1mSee https://docs.steambrew.app/users/installing for help.\e[0m"
 }

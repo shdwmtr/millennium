@@ -119,7 +119,12 @@ const void SetupEnvironmentVariables()
     const std::string configDir = GetEnvWithFallback("XDG_CONFIG_HOME", fmt::format("{}/.config", homeDir));
     const std::string dataDir   = GetEnvWithFallback("XDG_DATA_HOME", fmt::format("{}/.local/share", homeDir));
     const std::string stateDir  = GetEnvWithFallback("XDG_STATE_HOME", fmt::format("{}/.local/state", homeDir));
-    const static std::string pythonEnv = fmt::format("{}/millennium/lib/cache", dataDir);
+    const static std::string pythonEnv = fmt::format("{}/millennium/.venv", dataDir);
+    const std::string pythonEnvBin = fmt::format("{}/bin/python3.11", pythonEnv);
+
+    if (access(pythonEnvBin.c_str(), F_OK) == -1) {
+        std::system(fmt::format("{}/bin/python3.11 -m venv {} --system-site-packages --symlinks", MILLENNIUM__PYTHON_ENV, pythonEnv).c_str());
+    }
 
     std::map<std::string, std::string> environment_unix = {
         { "MILLENNIUM_RUNTIME_PATH", "/usr/lib/millennium/libmillennium_x86.so" },
@@ -129,16 +134,16 @@ const void SetupEnvironmentVariables()
         { "MILLENNIUM__PLUGINS_PATH",   fmt::format("{}/millennium/plugins",    dataDir) },
         { "MILLENNIUM__CONFIG_PATH",    fmt::format("{}/millennium",            configDir) },
         { "MILLENNIUM__LOGS_PATH",      fmt::format("{}/millennium/logs",       stateDir) },
-        { "MILLENNIUM__DATA_LIB",       fmt::format("{}/millennium/lib",        dataDir) },
-        { "MILLENNIUM__SHIMS_PATH",     fmt::format("{}/millennium/lib/shims",  dataDir) },
-        { "MILLENNIUM__ASSETS_PATH",    fmt::format("{}/millennium/lib/assets", dataDir) },
+        { "MILLENNIUM__DATA_LIB",       "/usr/share/millennium" },
+        { "MILLENNIUM__SHIMS_PATH",     "/usr/share/millennium/shims" },
+        { "MILLENNIUM__ASSETS_PATH",    "/usr/share/millennium/assets" },
         
         { "MILLENNIUM__UPDATE_SCRIPT_PROMPT", MILLENNIUM__UPDATE_SCRIPT_PROMPT }, /** The script the user will run to update millennium. */
         
         { "MILLENNIUM__PYTHON_ENV",             pythonEnv },
-        { "LIBPYTHON_RUNTIME_BIN_PATH",         LIBPYTHON_RUNTIME_BIN_PATH         == "<UNKNOWN>" ? fmt::format("{}/bin/python3.11",             pythonEnv) : LIBPYTHON_RUNTIME_BIN_PATH         },
-        { "LIBPYTHON_BUILTIN_MODULES_PATH",     LIBPYTHON_BUILTIN_MODULES_PATH     == "<UNKNOWN>" ? fmt::format("{}/lib/python3.11",             pythonEnv) : LIBPYTHON_BUILTIN_MODULES_PATH     },
-        { "LIBPYTHON_BUILTIN_MODULES_DLL_PATH", LIBPYTHON_BUILTIN_MODULES_DLL_PATH == "<UNKNOWN>" ? fmt::format("{}/lib/python3.11/lib-dynload", pythonEnv) : LIBPYTHON_BUILTIN_MODULES_DLL_PATH }
+        { "LIBPYTHON_RUNTIME_BIN_PATH",         pythonEnvBin },
+        { "LIBPYTHON_BUILTIN_MODULES_PATH",     fmt::format("{}/lib/python3.11",             MILLENNIUM__PYTHON_ENV) },
+        { "LIBPYTHON_BUILTIN_MODULES_DLL_PATH", fmt::format("{}/lib/python3.11/lib-dynload", MILLENNIUM__PYTHON_ENV) }
     };
     environment.insert(environment_unix.begin(), environment_unix.end());
     #endif

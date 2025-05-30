@@ -62,7 +62,7 @@ log "\nTotal Download Size: $size"
 log "Retreiving packages..."
 
 # ask to proceed
-echo -e "\n${BOLD_PINK}::${RESET} Installing for \"$SUDO_USER\". Proceed with installation? [Y/n] \c"
+echo -e "\n${BOLD_PINK}::${RESET} Proceed with installation? [Y/n] \c"
 
 read -r proceed </dev/tty
 
@@ -86,16 +86,12 @@ log "deflating assets..."
 mkdir -p "$extract_path"
 tar xzf "$tar" -C "$extract_path"
 
-if [ "$SUDO_USER" != "user" ]; then
-    mv "$extract_path/home/user" "$extract_path/home/$SUDO_USER"
-fi
 folder_size=$(du -sb "$extract_path" | awk '{print $1}' | numfmt --to=iec-i --suffix=B --padding=7 | sed 's/\([0-9]\)\([A-Za-z]\)/\1 \2/')
 log "\nTotal Install Size: $folder_size"
 
 cp -r "$extract_path"/* / || true
 
 chmod +x /usr/bin/millennium
-chown -R "$SUDO_USER:$SUDO_USER" /home/"$SUDO_USER"/.local/share/millennium
 
 log "cleaning up packages..."
 rm -rf "$millennium_install"
