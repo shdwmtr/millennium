@@ -51,8 +51,14 @@ enum eFileType
     otf,
     woff,
     woff2,
+    png,
+    jpeg,
+    jpg,
     gif,
-    unknown
+    webp,
+    svg,
+    html,
+    unknown,
 };
 
 /**
@@ -64,7 +70,7 @@ enum eFileType
  * - `Python` maps to "text/x-python"
  * - `Other` maps to "text/plain"
  */
-static std::map<eFileType, std::string> fileTypes 
+static std::map<eFileType, std::string> fileTypes
 {
     { eFileType::css,     "text/css"               },
     { eFileType::js,      "application/javascript" },
@@ -74,7 +80,13 @@ static std::map<eFileType, std::string> fileTypes
     { eFileType::otf,     "font/otf"               },
     { eFileType::woff,    "font/woff"              },
     { eFileType::woff2,   "font/woff2"             },
+    { eFileType::png,     "image/png"              },
+    { eFileType::jpeg,    "image/jpeg"             },
+    { eFileType::jpg,     "image/jpeg"             },
     { eFileType::gif,     "image/gif"              },
+    { eFileType::webp,    "image/webp"             },
+    { eFileType::svg,     "image/svg+xml"          },
+    { eFileType::html,    "text/html"              },
     { eFileType::unknown, "text/plain"             },
 
 };
@@ -87,7 +99,18 @@ static std::map<eFileType, std::string> fileTypes
  */
 static constexpr bool IsBinaryFile(eFileType fileType)
 {
-    return fileType == eFileType::ttf || fileType == eFileType::otf || fileType == eFileType::woff || fileType == eFileType::woff2 || fileType == eFileType::gif || fileType == eFileType::unknown;
+    return fileType == eFileType::ttf
+        || fileType == eFileType::otf
+        || fileType == eFileType::woff
+        || fileType == eFileType::woff2
+        || fileType == eFileType::png
+        || fileType == eFileType::jpeg
+        || fileType == eFileType::jpg
+        || fileType == eFileType::gif
+        || fileType == eFileType::webp
+        || fileType == eFileType::svg
+        || fileType == eFileType::html
+        || fileType == eFileType::unknown;
 }
 
 /**
@@ -115,8 +138,14 @@ static const eFileType EvaluateFileType(std::filesystem::path filePath)
     else if (extension == ".otf"  ) { return eFileType::otf;   }
     else if (extension == ".woff" ) { return eFileType::woff;  }
     else if (extension == ".woff2") { return eFileType::woff2; }
+    else if (extension == ".png"  ) { return eFileType::png;   }
+    else if (extension == ".jpeg" ) { return eFileType::jpeg;  }
+    else if (extension == ".jpg"  ) { return eFileType::jpg;   }
     else if (extension == ".gif"  ) { return eFileType::gif;   }
-    
+    else if (extension == ".webp" ) { return eFileType::webp;  }
+    else if (extension == ".svg"  ) { return eFileType::svg;   }
+    else if (extension == ".html") { return eFileType::html;  }
+
     else
     {
         return eFileType::unknown;
