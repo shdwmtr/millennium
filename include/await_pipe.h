@@ -40,6 +40,13 @@
 #pragma comment(lib, "iphlpapi.lib")
 #include <tlhelp32.h>
 #include <psapi.h>
+#include <commctrl.h>
+#include "cmd.h"
+#include "locals.h"
+const TASKDIALOG_BUTTON portdialogbtns[] = {
+    {301, L"Restart Steam with different port"},
+    {302, L"Exit"},
+};
 #elif __linux__
 #include <fstream>
 #include <sstream>
@@ -47,22 +54,20 @@
 #include <cstdlib>
 #include <cstdio>
 #endif
-#include "cmd.h"
-
 
 static bool bHasCheckedConnection = false;
 
 class SocketHelpers
 {
 private:
-
+    std::unique_ptr<StartupParameters> startupParams;
     short debuggerPort;
 
     const short GetDebuggerPort()
     {
         #ifdef _WIN32
         {
-            std::unique_ptr<StartupParameters> startupParams = std::make_unique<StartupParameters>();
+            startupParams = std::make_unique<StartupParameters>();
 
             for (const auto& parameter : startupParams->GetArgumentList())
             {
@@ -203,11 +208,76 @@ public:
                 "To address this you must uninstall/close the conflicting app, change the port it uses (assuming its possible), or uninstall Millennium.\n\n"
                 "Millennium & Steam will now close until further action is taken.", debuggerPort, processName
             );
-
-            #ifdef _WIN32
-            MessageBoxA(nullptr, message.c_str(), "Fatal Error", MB_ICONERROR);
-            #endif
             Logger.Warn(message);
+            #ifdef _WIN32
+            const std::wstring messageW = std::wstring(message.begin(), message.end());
+            const TASKDIALOGCONFIG portdialog = {
+                sizeof(TASKDIALOGCONFIG),
+                0,
+                0,
+                0,
+                0,
+                L"Fatal Error",
+                {.pszMainIcon = TD_ERROR_ICON},
+                0,
+                messageW.c_str(),
+                2,
+                portdialogbtns,
+                301,
+                0,
+                0,
+                0,
+                L"Remember my choice.",
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+            };
+
+            if (debuggerPort == 12418)
+            {
+                TaskDialog(NULL, NULL, L"Fatal Error", NULL, L"Too bad", 0, TD_ERROR_ICON, 0);
+                std::exit(1);
+            }
+
+            const auto filePath = SystemIO::GetSteamPath() / ".millennium_use_different_port";
+
+            int btn = 0;
+            if (std::filesystem::exists(filePath)) 
+            {
+                std::ifstream saved_choice(filePath);
+                saved_choice.read(reinterpret_cast<char*>(&btn), sizeof(btn));
+                saved_choice.close();
+            }
+
+            if (btn == 0)
+            {
+                WINBOOL check = 0;
+                TaskDialogIndirect(&portdialog, &btn, 0, &check);
+
+                if (check && btn != 0) {                    
+                    std::ofstream saved_choice(filePath);
+                    saved_choice.write(reinterpret_cast<char*>(&btn), sizeof(btn));
+                    saved_choice.close();
+                }
+            }
+
+            if (btn == 301) {
+                std::vector<char *> argListC;
+                argListC.reserve(startupParams->GetArgumentList().size()+2);
+                for (const auto& arg : startupParams->GetArgumentList())
+                    argListC.push_back(const_cast<char*>(arg.c_str()));
+                argListC.push_back(const_cast<char*>("-devtools-port=12418"));
+                argListC.push_back(nullptr);
+                LPSTR* argv = argListC.data();
+                _execv(argv[0], argv);
+                Logger.Warn("_execv failed. errno is {}", errno);
+            }
+            #endif
             std::exit(1);
         }
 
