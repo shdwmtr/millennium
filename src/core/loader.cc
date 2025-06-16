@@ -171,7 +171,7 @@ public:
         Logger.Log("Connected to Steam @ {}", (void*)client);
 
         this->SetupSharedJSContext();
-        webKitHandler.SetupGlobalHooks();
+        webKitHandler.Init();
     }
 
     MILLENNIUM CEFBrowser(uint16_t ftpPort, uint16_t ipcPort) : m_ftpPort(ftpPort), m_ipcPort(ipcPort), webKitHandler(WebkitHandler::get()) 
